@@ -1,0 +1,8 @@
+# Directories
+__pycache__
+checkpoints
+data
+val_output
+
+# file types
+*.pyc

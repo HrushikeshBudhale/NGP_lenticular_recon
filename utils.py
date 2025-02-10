@@ -33,7 +33,7 @@ def split_batch(tensors: list[torch.Tensor], batch_size: int) -> list[torch.Tens
 
 
 def create_gif(image_folder:str, gif_name:str, duration:float=5.0):
-    frames = [imageio.imread(image_folder + image_name) for image_name in sorted(os.listdir(image_folder))]
+    frames = [imageio.imread(image_folder + image_name) for image_name in os.listdir(image_folder)]
     imageio.mimsave(gif_name, frames, 'GIF', duration=duration, loop=2)
 
 
@@ -126,13 +126,18 @@ def psnr(img1: torch.Tensor, img2: torch.Tensor) -> float:
     return (20 * torch.log10(PIXEL_MAX / torch.sqrt(mse))).item()
 
 
-def pixel_to_ray(uv, poses, Ks) -> tuple[torch.Tensor, torch.Tensor]:
+def pixel_to_ray(uv, poses, Ks, is_training=True) -> tuple[torch.Tensor, torch.Tensor]:
     # uv: (H*W, 2)
     # poses: (N, 4, 4)
     # Ks: (N, 3, 3)
     uv = uv.unsqueeze(0).repeat(len(Ks), 1, 1)                              # (N, H*W, 2)
     xc = pixel_to_camera(uv, Ks)                                            # (N, H*W, 3)
     xw = camera_to_world(xc, poses)                                         # (N, H*W, 3)
+    if is_training:
+        eye = torch.eye(4, device=uv.device)
+        eye[[0,1],:2] *= -1 # Rotate camera 180 degrees along Z
+        eye = eye.unsqueeze(0).repeat(len(Ks), 1, 1)                        # (N, 4,4)
+        xw = camera_to_world(xc, eye)                                       # (N, H*W, 3)
 
     # ray origins
     r_o = poses[:, :3, -1].unsqueeze(1)                                     # (N, 1, 3)
@@ -140,7 +145,6 @@ def pixel_to_ray(uv, poses, Ks) -> tuple[torch.Tensor, torch.Tensor]:
 
     # ray directions
     r_d = xw - r_o                                                          # (N, H*W, 3)
-    r_d = r_d / torch.norm(r_d, dim=-1, keepdim=True)                       # (N, H*W, 3)
     return r_o, r_d                                                         # (N, H*W, 3), (N, H*W, 3)
 
 

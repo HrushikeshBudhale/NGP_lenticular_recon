@@ -210,7 +210,9 @@ class RaysData:
         uv = uv + 0.5 # add 0.5 offset to each pixel
         self.uv_flattened = uv.reshape(-1, 2)                               # (H*W, 2)
 
-        r_o, r_d = utils.pixel_to_ray(self.uv_flattened, poses, Ks)         # (N, H*W, 3), (N, H*W, 3)
+        training = False if torch.sum(images) == 0 else True
+        r_o, r_d = utils.pixel_to_ray(self.uv_flattened, 
+                                      poses, Ks, training)                  # (N, H*W, 3), (N, H*W, 3)
         self.pixels = images.reshape(-1, 3)                                 # (N*H*W, 3)
         self.r_o_flattened = r_o.reshape(-1, 3)                             # (N*H*W, 3)
         self.r_d_flattened = r_d.reshape(-1, 3)                             # (N*H*W, 3)

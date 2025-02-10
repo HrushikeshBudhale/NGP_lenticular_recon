@@ -27,7 +27,7 @@ def rot_x(theta: float) -> np.ndarray:
 def get_rotation_facing(v: np.ndarray) -> np.ndarray:
     # generate rotation matrix such that Z axis of R is v
     Z = v / np.linalg.norm(v)
-    up = np.array([0, 0, 1])
+    up = np.array([0, 1, 0])
     if np.linalg.norm(np.cross(Z, up)) == 0:
         return np.eye(3)
     X = np.cross(Z, up)

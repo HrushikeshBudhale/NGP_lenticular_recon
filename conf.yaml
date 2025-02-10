@@ -1,6 +1,6 @@
-dataset_type: "ImageRecon" # [tiny_nerf, custom, blender, ImageRecon]
-dataset_path: "/root/NeRF_from_scratch/data/megapixel_tokyo.jpg" # 6144 x 2324 x 3 = 42,835,968
-ckpt_path: "checkpoints/img_recon_ngp_checkpoint.pt"
+dataset_type: "ImageMagic"
+dataset_path: "data/lenticular_effect_DC_weather"
+ckpt_path: "checkpoints/lenticular_recon_ngp_checkpoint.pt"
 
 # ngp parameters
 rays_per_batch: 640000
@@ -11,7 +11,7 @@ perturb_samples: False
 scene_scale: 0.5                      # Downsizing factor to bring scene within [0, 1]^3
 T: 524288                             # 2**19 # Hash table size
 Nmin: 16                              # Minimum grid resolution
-Nmax: 2048                            # Maximum grid resolution
+Nmax: 600                             # Maximum grid resolution
 Nlevels: 16                           # Number of levels
 L: 2                                  # Number of frequencies for encoding directions
 d: 2                                  # grid dimension
@@ -22,35 +22,6 @@ t_thresh: 0.0001                      # 1e-4 # Transmittance threshold
 
 # training parameters
 lr: 0.01
-epochs: 350
-val_interval: 25
-save_interval: 25
-
-# Parameters used for Lego Scene dataset
-# dataset_type: "blender" # [tiny_nerf, custom, blender]
-# dataset_path: "data/lego"
-# ckpt_path: "checkpoints/lego_blender_ngp_checkpoint.pt"
-
-# # ngp parameters
-# rays_per_batch: 2048
-# near: 2.0
-# far: 6.0
-# samples_per_ray: 591                  # 1024/sqrt(3)
-# perturb_samples: True
-# scene_scale: 0.3333                   # Downsizing factor to bring scene within [0, 1]^3
-# T: 524288                             # 2**19 # Hash table size
-# Nmin: 16                              # Minimum grid resolution
-# Nmax: 2048                            # Maximum grid resolution
-# Nlevels: 16                           # Number of levels
-# L: 4                                  # Number of frequencies for encoding
-# d: 3                                  # grid dimension
-# F: 2                                  # Number of feature channels
-# occupancy_grid_res: 128               # For accelerated raymarching
-# occ_decay: 0.70                       # occupancy decay rate (0.95 in paper)
-# t_thresh: 0.0001                      # 1e-4 # Transmittance threshold
-
-# # training parameters
-# lr: 0.01
-# epochs: 10000
-# val_interval: 250
-# save_interval: 250
+epochs: 1500
+val_interval: 100
+save_interval: 100

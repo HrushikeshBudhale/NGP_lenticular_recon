@@ -106,7 +106,7 @@ class CustomDataloader(BaseDataloader):
 
 class BlenderDataloader(BaseDataloader):
     # tested on 800x800 res image 
-    def __init__(self, base_dir: str, scale:float=1.0, testskip: int=1):
+    def __init__(self, base_dir: str, scale:float=1, testskip: int=1):
         super().__init__()
 
         for s in ['train', 'val', 'test']:
@@ -149,6 +149,56 @@ class ImageReconDataloader(BaseDataloader):
             K = utils.intrinsic_matrix(self.focal, self.focal, self.W / 2, self.H / 2)
             self.Ks[s] = K.unsqueeze(0).repeat(self.N[s], 1, 1)
 
+class ImageMagicDataloader(BaseDataloader):
+    def __init__(self, base_dir: str):
+        super().__init__()
+        from gen_extrinsics import gen_circular_poses
+        
+        def get_nearby_indexes(mid, span, arr_len):
+            res = []
+            st = mid - (span//2)
+            end = st + span
+            if st < 0:
+                res += list([arr_len + i for i in range(st, 0)])
+                res += list(range(0, end))
+            else:
+                res += list(range(st,end))
+            return res
+
+
+        test_frame_count = 80
+        test_poses  = np.array(list(gen_circular_poses(circle_center=np.array([0, 0, -1]), 
+                                                   look_at=np.array([0,0,0]), radius=0.5, n_frames=test_frame_count)))
+        images = [np.array(imageio.imread(os.path.join(base_dir, image_name))) for image_name in sorted(os.listdir(base_dir))]
+        
+        # find smallest width and height and resize all images to that
+        min_h, min_w = min([img.shape[0] for img in images]), min([img.shape[1] for img in images])
+        images = [cv2.resize(img, (min_w, min_h), interpolation=cv2.INTER_AREA) for img in images]
+        
+        center_indexes = np.arange(0, test_frame_count, test_frame_count//len(images))
+        span = 11
+        train_poses, train_images = [], []
+        for ci, img in zip(center_indexes, images):
+            surround_indexes = get_nearby_indexes(ci, span, test_frame_count)
+            train_poses.append(test_poses[surround_indexes])
+            train_images += [img]*span
+        train_poses = np.concatenate(train_poses)
+        train_images = np.array(train_images)
+
+        for s in ['train', 'val']:
+            self.images[s] = train_images[...,:3].astype(np.float32) / 255.0
+            self.c2w[s] = train_poses
+            self.N[s] = len(train_poses)
+            self.H, self.W = self.images[s][0].shape[:2]
+            self.focal = self.W / 2
+            K = utils.intrinsic_matrix(self.focal, self.focal, self.W / 2, self.H / 2)
+            self.Ks[s] = K.unsqueeze(0).repeat(self.N[s], 1, 1)
+
+        # widen the view for test set
+        self.H = int(1.3*self.H)
+        self.W = int(1.3*self.W)
+        self.set_test_data(test_poses)
+
 class RaysData:
     def __init__(self, images: torch.Tensor, poses: torch.Tensor, Ks: torch.Tensor):
         self.K = Ks[0]
@@ -186,6 +236,7 @@ def get_dataloader(type: str, data_path: str) -> BaseDataloader:
         "custom": CustomDataloader,
         "blender": BlenderDataloader,
         "ImageRecon": ImageReconDataloader,
+        "ImageMagic": ImageMagicDataloader,
     }
     if type not in loaders:
         raise ValueError(f"Invalid dataloader type: {type}")

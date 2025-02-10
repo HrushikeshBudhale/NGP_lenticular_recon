@@ -19,9 +19,6 @@ if __name__ == "__main__":
     conf = utils.load_yaml("conf.yaml")
 
     dataloader = get_dataloader(conf["dataset_type"], conf["dataset_path"])
-    # poses = np.array(list(gen_circular_poses(circle_center=np.array([3, 0, 2]), radius=2)))
-    poses = np.array(list(gen_surrounding_poses(radius=3, look_at=np.array([0,0,0]), n_frames=120)))
-    dataloader.set_test_data(poses)
     test_rays = RaysData(*dataloader.get_data(stype="test"))
     ray_sampler = RaySampler(conf)
     renderer = Renderer(conf)

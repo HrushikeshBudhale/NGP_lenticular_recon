@@ -8,9 +8,15 @@ Inspired from repo [gaussian-painters](https://github.com/ReshotAI/gaussian-pain
 
 ## Results
 
-![Avengers reconstruction](results/recon_output_avengers.gif)
+<p align="center">
+  <img src="results/recon_output_avengers.gif" alt="Avengers reconstruction">
+</p>
+<p align="center"><i>4 Avengers</i> </p>
 
-![DC weather reconstruction](results/recon_output_DC_weather.gif)
+<p align="center">
+  <img src="results/recon_output_DC_weather.gif" alt="DC weather reconstruction">
+</p>
+<p align="center"><i>Weather in Washington DC</i> </p>
 
 ## Setup
 
